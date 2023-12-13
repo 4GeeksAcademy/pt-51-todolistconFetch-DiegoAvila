@@ -13,16 +13,32 @@ const Home = () => {
 			body: JSON.stringify([]),
 			headers: {"Content-Type": "application/json"},
 		  })
-		  .then((response)=>response.json()) 
-		  .then((data)=>console.log(data))
+		  .then((response)=>{
+			if (response.status === 400){
+				obtenerContenido()
+			}
+			return response.json() 
+			})
+		  .then((data)=>(data))
 		  .catch((error)=>console.log(error))
 	}
 	function obtenerContenido() {
 		fetch('https://playground.4geeks.com/apis/fake/todos/user/avila46')
 		  .then((response)=>response.json()) 
 		  .then((data)=>setContenido(data))
+		  .catch((error)=>console.log(error))		
+	}
+	
+	function actualizarContenido(lista){
+		fetch('https://playground.4geeks.com/apis/fake/todos/user/avila46', {
+			method: "PUT", // or 'PUT'
+			body: JSON.stringify(lista),
+			headers: {"Content-Type": "application/json"},
+		  })
+		  .then((response)=> response.json()) 
+		  .then((data)=>(data))
 		  .catch((error)=>console.log(error))
-		
+
 	}
 	
 	useEffect(()=>{
@@ -34,8 +50,11 @@ const Home = () => {
 		setEntrada(event.target.value)
 	}
 	function capturarContenido(event) {
+		let aux = []
 		if (event.keyCode===13 && entrada!= ""){
-			setContenido(contenido.concat(entrada))
+			setContenido(contenido.concat({ label: entrada, done: false }))
+			aux = contenido.concat({ label: entrada, done: false })
+			actualizarContenido(aux)
 		}	
 	}
 	const mostrarBoton = (index) =>{
@@ -44,11 +63,14 @@ const Home = () => {
 	const ocultarBoton = () =>{
 		setHoverIndex(null)
 	}
-	const eliminarDato = (index) => { 
+	const eliminarDato = (index) => {
+		let aux = [] 
 		setContenido(contenido.filter((elemento,i) => i !== index))
+		aux = contenido.filter((elemento,i) => i !== index)
+		actualizarContenido(aux)
 	}
 	const listaContenido = contenido.map((elemento, index) =>
-		<li key={elemento.id} className="list-group-item border-bottom">
+		<li key={index} className="list-group-item border-bottom">
 			<div className="d-flex justify-content-between py-1" onMouseEnter={() => mostrarBoton(index)} onMouseLeave={ocultarBoton}>
 				{elemento.label}
 				<button type="button" className={`btn py-0 ${hoverIndex===index ? "d-flex" : "d-none"}`} onClick={() => eliminarDato(index)} >x</button>
